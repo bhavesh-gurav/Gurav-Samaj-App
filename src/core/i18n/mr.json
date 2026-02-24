@@ -1,0 +1,122 @@
+{
+    "languageSelect": {
+        "title": "भाषा निवडा",
+        "subtitle": "Choose your preferred language / आपली भाषा निवडा",
+        "english": "English",
+        "marathi": "मराठी (Marathi)",
+        "continue": "पुढे जा",
+        "selectAlert": "कृपया पुढे जाण्यासाठी भाषा निवडा."
+    },
+    "navigation": {
+        "calendar": "दिनदर्शिका",
+        "community": "समाज",
+        "profile": "प्रोफाइल"
+    },
+    "calendar": {
+        "fetchingLocation": "स्थान मिळवत आहे...",
+        "detectedLocation": "शोधलेले स्थान",
+        "fallbackLocation": "मुंबई",
+        "loading": "लोड होत आहे...",
+        "noData": "माहिती उपलब्ध नाही"
+    },
+    "dayDetail": {
+        "festival": "सण",
+        "panchangDetails": "पंचांग माहिती",
+        "monthPaksha": "महिना आणि पक्ष",
+        "tithi": "तिथी",
+        "nakshatra": "नक्षत्र",
+        "sunriseSunset": "सूर्योदय / सूर्यास्त",
+        "sunrise": "सूर्योदय",
+        "sunset": "सूर्यास्त",
+        "muhurat": "मुहूर्त",
+        "abhijitMuhurat": "अभिजित मुहूर्त",
+        "rahuKaal": "राहुकाळ"
+    },
+    "community": {
+        "announcements": "घोषणा",
+        "upcoming": "आगामी",
+        "passed": "झालेले",
+        "todaysBirthdays": "आजचे वाढदिवस",
+        "yearsOld": "{{age}} वर्षांचे",
+        "upcomingEvents": "आगामी कार्यक्रम",
+        "addEvent": "कार्यक्रम जोडा",
+        "noBirthdays": "आज वाढदिवस नाही",
+        "noEvents": "आगामी कार्यक्रम नाहीत",
+        "createdBy": "{{name}} द्वारे"
+    },
+    "profile": {
+        "settings": "सेटिंग्ज",
+        "darkMode": "डार्क मोड",
+        "changeLanguage": "भाषा बदला",
+        "personalInfo": "वैयक्तिक माहिती",
+        "fullName": "पूर्ण नाव",
+        "enterName": "आपले पूर्ण नाव टाका",
+        "birthDate": "जन्म तारीख",
+        "selectDate": "तारीख निवडा",
+        "save": "प्रोफाइल जतन करा",
+        "saved": "प्रोफाइल यशस्वीपणे जतन केले!",
+        "nameRequired": "कृपया आपले नाव टाका",
+        "dateRequired": "कृपया जन्म तारीख निवडा",
+        "guestMessage": "तुम्ही पाहुणे म्हणून ब्राउझ करत आहात. समुदाय वैशिष्ट्यांसाठी लॉगिन करा.",
+        "loginPrompt": "समुदायात सामील होण्यासाठी लॉगिन करा"
+    },
+    "event": {
+        "title": "कार्यक्रम तयार करा",
+        "eventName": "कार्यक्रमाचे नाव",
+        "description": "वर्णन",
+        "address": "पत्ता",
+        "city": "शहर",
+        "date": "तारीख",
+        "startTime": "सुरुवातीची वेळ",
+        "contactNumber": "संपर्क क्रमांक",
+        "submit": "कार्यक्रम तयार करा",
+        "success": "कार्यक्रम यशस्वीपणे तयार केले!",
+        "nameRequired": "कार्यक्रमाचे नाव आवश्यक आहे",
+        "addressRequired": "पत्ता आवश्यक आहे",
+        "cityRequired": "शहर आवश्यक आहे",
+        "dateRequired": "तारीख आवश्यक आहे"
+    },
+    "weekDays": {
+        "sun": "र",
+        "mon": "सो",
+        "tue": "मं",
+        "wed": "बु",
+        "thu": "गु",
+        "fri": "शु",
+        "sat": "श"
+    },
+    "months": {
+        "jan": "जानेवारी",
+        "feb": "फेब्रुवारी",
+        "mar": "मार्च",
+        "apr": "एप्रिल",
+        "may": "मे",
+        "jun": "जून",
+        "jul": "जुलै",
+        "aug": "ऑगस्ट",
+        "sep": "सप्टेंबर",
+        "oct": "ऑक्टोबर",
+        "nov": "नोव्हेंबर",
+        "dec": "डिसेंबर"
+    },
+    "holidays": {
+        "republic_day": "प्रजासत्ताक दिन",
+        "independence_day": "स्वातंत्र्य दिन",
+        "gandhi_jayanti": "गांधी जयंती",
+        "holiday": "सुट्टी"
+    },
+    "login": {
+        "title": "ओम गणेशाय नमः",
+        "subtitle": "गुरव समाजात स्वागत",
+        "mobile": "मोबाइल क्रमांक",
+        "name": "पूर्ण नाव",
+        "namePlaceholder": "आपले पूर्ण नाव टाका",
+        "birthDate": "जन्म तारीख",
+        "selectDate": "तारीख निवडा",
+        "submit": "लॉगिन / नोंदणी",
+        "mobileInvalid": "कृपया 10 अंकी मोबाइल क्रमांक टाका",
+        "nameRequired": "कृपया आपले नाव टाका",
+        "dateRequired": "कृपया जन्म तारीख निवडा",
+        "skip": "आत्ता वगळा"
+    }
+}

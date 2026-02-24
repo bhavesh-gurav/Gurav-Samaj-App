@@ -1,0 +1,122 @@
+{
+    "languageSelect": {
+        "title": "Select Language",
+        "subtitle": "Choose your preferred language / आपली भाषा निवडा",
+        "english": "English",
+        "marathi": "मराठी (Marathi)",
+        "continue": "Continue",
+        "selectAlert": "Please select a language to continue."
+    },
+    "navigation": {
+        "calendar": "Calendar",
+        "community": "Community",
+        "profile": "Profile"
+    },
+    "calendar": {
+        "fetchingLocation": "Fetching Location...",
+        "detectedLocation": "Detected Location",
+        "fallbackLocation": "Mumbai (Fallback)",
+        "loading": "Loading...",
+        "noData": "No Data Available"
+    },
+    "dayDetail": {
+        "festival": "Festival",
+        "panchangDetails": "Panchang Details",
+        "monthPaksha": "Month & Paksha",
+        "tithi": "Tithi",
+        "nakshatra": "Nakshatra",
+        "sunriseSunset": "Sunrise / Sunset",
+        "sunrise": "Sunrise",
+        "sunset": "Sunset",
+        "muhurat": "Muhurat",
+        "abhijitMuhurat": "Abhijit",
+        "rahuKaal": "Rahu Kaal"
+    },
+    "community": {
+        "announcements": "Announcements",
+        "upcoming": "Upcoming",
+        "passed": "Passed",
+        "todaysBirthdays": "Today's Birthdays",
+        "yearsOld": "{{age}} years old",
+        "upcomingEvents": "Upcoming Events",
+        "addEvent": "Add Event",
+        "noBirthdays": "No birthdays today",
+        "noEvents": "No upcoming events",
+        "createdBy": "By {{name}}"
+    },
+    "profile": {
+        "settings": "Settings",
+        "darkMode": "Dark Mode",
+        "changeLanguage": "Change Language",
+        "personalInfo": "Personal Information",
+        "fullName": "Full Name",
+        "enterName": "Enter your full name",
+        "birthDate": "Date of Birth",
+        "selectDate": "Select Date",
+        "save": "Save Profile",
+        "saved": "Profile saved successfully!",
+        "nameRequired": "Please enter your name",
+        "dateRequired": "Please select your date of birth",
+        "guestMessage": "You are browsing as Guest. Login to access community features.",
+        "loginPrompt": "Login to Join Community"
+    },
+    "event": {
+        "title": "Create Event",
+        "eventName": "Event Name",
+        "description": "Description",
+        "address": "Address",
+        "city": "City",
+        "date": "Date",
+        "startTime": "Start Time",
+        "contactNumber": "Contact Number",
+        "submit": "Create Event",
+        "success": "Event created successfully!",
+        "nameRequired": "Event name is required",
+        "addressRequired": "Address is required",
+        "cityRequired": "City is required",
+        "dateRequired": "Date is required"
+    },
+    "weekDays": {
+        "sun": "S",
+        "mon": "M",
+        "tue": "T",
+        "wed": "W",
+        "thu": "T",
+        "fri": "F",
+        "sat": "S"
+    },
+    "months": {
+        "jan": "January",
+        "feb": "February",
+        "mar": "March",
+        "apr": "April",
+        "may": "May",
+        "jun": "June",
+        "jul": "July",
+        "aug": "August",
+        "sep": "September",
+        "oct": "October",
+        "nov": "November",
+        "dec": "December"
+    },
+    "holidays": {
+        "republic_day": "Republic Day",
+        "independence_day": "Independence Day",
+        "gandhi_jayanti": "Gandhi Jayanti",
+        "holiday": "Holiday"
+    },
+    "login": {
+        "title": "Om Ganeshay Namah",
+        "subtitle": "Welcome to Gurav Samaj",
+        "mobile": "Mobile Number",
+        "name": "Full Name",
+        "namePlaceholder": "Enter your full name",
+        "birthDate": "Date of Birth",
+        "selectDate": "Select Date",
+        "submit": "Login / Register",
+        "mobileInvalid": "Please enter a valid 10-digit mobile number",
+        "nameRequired": "Please enter your name",
+        "dateRequired": "Please select your date of birth",
+        "skip": "Skip for Now"
+    }
+}
