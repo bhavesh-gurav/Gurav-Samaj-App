@@ -78,7 +78,7 @@ export const CalendarScreen = () => {
                 setLoading(false);
             }
         })();
-    }, [year, month, cachedMonthGrid, dispatch, monthKey]);
+    }, [year, month, dispatch, monthKey, t]);
 
     const changeMonth = (diff: number) => {
         setCurrentDate(new Date(year, month + diff, 1));
@@ -123,8 +123,25 @@ export const CalendarScreen = () => {
         navigation.navigate('DayDetail', { dayData: day });
     };
 
-    const getDayBackgroundColor = (cell: CalendarDay) => {
-        if (cell.nationalHolidayKey || cell.isSunday) {
+    const localToday = new Date();
+    const isCellToday = (cell: CalendarDay) => {
+        const d = new Date(cell.dateObj);
+        return d.getDate() === localToday.getDate() &&
+            d.getMonth() === localToday.getMonth() &&
+            d.getFullYear() === localToday.getFullYear();
+    };
+
+    const getDayBackgroundColor = (cell: CalendarDay, isTodayOverride: boolean) => {
+        if (isTodayOverride) {
+            if (cell.nationalHolidayKey || cell.isSunday) {
+                return isDark ? '#4a1515' : '#ffcdd2'; // Darker red for today if Sunday/Holiday
+            }
+            return isDark ? '#2c2c2c' : '#e3f2fd'; // Subtle highlight for normal today
+        }
+        if (cell.nationalHolidayKey) {
+            return isDark ? '#4a1515' : '#ffebee';
+        }
+        if (cell.isSunday) {
             return isDark ? '#3b1f1f' : '#ffebee';
         }
         return theme.surface;
@@ -148,43 +165,47 @@ export const CalendarScreen = () => {
                     <ActivityIndicator size="large" color={theme.primary} style={styles.loader} />
                 ) : (
                     <View style={styles.gridContainer}>
-                        {cachedMonthGrid?.map((cell, idx) => (
-                            <TouchableOpacity
-                                key={idx}
-                                style={[
-                                    styles.dayCell,
-                                    { backgroundColor: getDayBackgroundColor(cell), borderColor: cell.isToday ? theme.primary : theme.border },
-                                    cell.isToday && styles.todayCell
-                                ]}
-                                onPress={() => onDayPress(cell)}
-                            >
-                                <Text style={[
-                                    styles.dayNumberText,
-                                    { color: cell.isCurrentMonth ? theme.textPrimary : theme.textSecondary }
-                                ]}>
-                                    {cell.dayNumber}
-                                </Text>
-
-                                <Text style={[
-                                    styles.tithiText,
-                                    { color: cell.isCurrentMonth ? theme.textSecondary : theme.border }
-                                ]} numberOfLines={1}>
-                                    {translatePanchangField(cell.tithi.split(' ')[0], i18n.language)}
-                                </Text>
-
-                                {cell.nationalHolidayKey ? (
-                                    <Text style={{ fontSize: 8, color: theme.error, marginTop: 1, fontWeight: 'bold' }}>
-                                        {t('holidays.holiday')}
+                        {cachedMonthGrid?.map((cell, idx) => {
+                            const isTodayValue = isCellToday(cell);
+                            return (
+                                <TouchableOpacity
+                                    key={idx}
+                                    style={[
+                                        styles.dayCell,
+                                        { backgroundColor: getDayBackgroundColor(cell, isTodayValue), borderColor: isTodayValue ? theme.primary : theme.border },
+                                        isTodayValue && styles.todayCell
+                                    ]}
+                                    onPress={() => onDayPress(cell)}
+                                >
+                                    <Text style={[
+                                        styles.dayNumberText,
+                                        { color: cell.isCurrentMonth ? theme.textPrimary : theme.textSecondary },
+                                        isTodayValue && { fontWeight: '900' }
+                                    ]}>
+                                        {cell.dayNumber}
                                     </Text>
-                                ) : (
-                                    <Text style={{ fontSize: 9, color: theme.textSecondary }}> {translatePanchangField(cell.paksha.charAt(0), i18n.language)}</Text>
-                                )}
 
-                                {cell.festivalMarker && (
-                                    <View style={[styles.dot, { backgroundColor: getMarkerColor(cell.festivalMarker) }]} />
-                                )}
-                            </TouchableOpacity>
-                        ))}
+                                    <Text style={[
+                                        styles.tithiText,
+                                        { color: cell.isCurrentMonth ? theme.textSecondary : theme.border }
+                                    ]} numberOfLines={1}>
+                                        {translatePanchangField(cell.tithi.split(' ')[0], i18n.language)}
+                                    </Text>
+
+                                    {cell.nationalHolidayKey ? (
+                                        <Text style={{ fontSize: 8, color: theme.error, marginTop: 1, fontWeight: 'bold' }}>
+                                            {t('holidays.holiday')}
+                                        </Text>
+                                    ) : (
+                                        <Text style={{ fontSize: 9, color: theme.textSecondary }}> {translatePanchangField(cell.paksha.charAt(0), i18n.language)}</Text>
+                                    )}
+
+                                    {cell.festivalMarker && (
+                                        <View style={[styles.dot, { backgroundColor: getMarkerColor(cell.festivalMarker) }]} />
+                                    )}
+                                </TouchableOpacity>
+                            )
+                        })}
                     </View>
                 )}
             </View>
@@ -241,6 +262,11 @@ const styles = StyleSheet.create({
     },
     todayCell: {
         borderWidth: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        elevation: 4,
     },
     dayNumberText: {
         fontSize: 16,

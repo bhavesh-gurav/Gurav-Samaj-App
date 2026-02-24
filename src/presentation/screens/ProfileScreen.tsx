@@ -61,9 +61,12 @@ export const ProfileScreen = () => {
             }
             console.log('[Profile] Saving with auth UID:', user.uid);
 
+            // Extract mobile number from internal email (e.g. "9876543210@guravsamaj.app")
+            const mobileNumber = user.email?.split('@')[0] || '';
+
             dispatch(setUserName(trimmedName));
             dispatch(setUserBirthDate(userBirthDate));
-            await saveUserProfile(user.uid, trimmedName, userBirthDate);
+            await saveUserProfile(user.uid, mobileNumber, trimmedName, userBirthDate);
             Alert.alert('', t('profile.saved'));
         } catch (e: any) {
             console.error('[Profile] Firestore save error:', e?.message || e);

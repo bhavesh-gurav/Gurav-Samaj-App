@@ -53,7 +53,7 @@ export const LoginScreen = () => {
             console.log('[Login] Authenticated UID:', user.uid);
 
             const birthDateISO = birthDate.toISOString();
-            await saveUserProfile(user.uid, trimmedName, birthDateISO);
+            await saveUserProfile(user.uid, trimmedMobile, trimmedName, birthDateISO);
             dispatch(setUserName(trimmedName));
             dispatch(setUserBirthDate(birthDateISO));
             dispatch(clearGuestMode());

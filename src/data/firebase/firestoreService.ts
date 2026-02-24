@@ -18,6 +18,7 @@ import { db } from './config';
 
 export interface UserProfile {
     id: string;
+    mobileNumber: string;
     name: string;
     birthDate: string;
     birthDay: number;
@@ -45,12 +46,14 @@ export interface CommunityEvent {
 
 export const saveUserProfile = async (
     userId: string,
+    mobileNumber: string,
     name: string,
     birthDate: string
 ): Promise<void> => {
     const bd = new Date(birthDate);
     const profile: Omit<UserProfile, 'id'> & { id: string } = {
         id: userId,
+        mobileNumber,
         name,
         birthDate,
         birthDay: bd.getDate(),
