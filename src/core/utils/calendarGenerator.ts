@@ -1,64 +1,68 @@
-import { calculatePanchang, PanchangInfo } from './panchang';
+import { calculatePanchang } from './panchang';
 import { INDIAN_NATIONAL_HOLIDAYS } from '../constants/nationalHolidays';
+import { CalendarCellData } from '../../domain/models/CalendarCellData';
 
-export interface CalendarDay extends PanchangInfo {
-    dateObj: string; // ISO String to persist via Redux
-    dayNumber: number;
-    isCurrentMonth: boolean;
-    isToday: boolean;
-    isSunday: boolean;
-    festivalMarker?: 'amavasya' | 'purnima' | 'ekadashi' | null;
-    nationalHolidayKey?: string;
-}
+// ─── Marathi numeral converter ───
+const MARATHI_DIGITS = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+const toMarathiNumeral = (num: number): string => {
+    return num.toString().split('').map((d) => MARATHI_DIGITS[parseInt(d, 10)] || d).join('');
+};
 
-export const generateMonthGrid = (
+/**
+ * Generates a full month grid of CalendarCellData objects.
+ * Structured as a 2D array of weeks (rows) x days (columns).
+ * Contains only current month dates. Precedes start date with nulls.
+ * Rows = 5 or 6 depending on month start/length.
+ */
+export const generateMonthData = (
     year: number,
     month: number,
     lat: number,
     lon: number
-): CalendarDay[] => {
-    const grid: CalendarDay[] = [];
+): (CalendarCellData | null)[][] => {
+    const weeks: (CalendarCellData | null)[][] = [];
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
-
-    // Day of week (0 = Sunday, 1 = Monday ...)
-    const startingDayOfWeek = firstDayOfMonth.getDay();
     const today = new Date();
 
-    // 1. Generate previous month overflowing days
-    const prevMonthLastDate = new Date(year, month, 0).getDate();
-    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-        const dayNum = prevMonthLastDate - i;
-        const date = new Date(year, month - 1, dayNum);
-        grid.push(buildCalendarDay(date, false, today, lat, lon));
+    const startingDayOfWeek = firstDayOfMonth.getDay();
+    const daysInMonth = lastDayOfMonth.getDate();
+
+    let currentWeek: (CalendarCellData | null)[] = [];
+
+    // 1. Insert empty cells before start
+    for (let i = 0; i < startingDayOfWeek; i++) {
+        currentWeek.push(null);
     }
 
-    // 2. Generate current month days
-    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+    // 2. Current month days
+    for (let i = 1; i <= daysInMonth; i++) {
         const date = new Date(year, month, i);
-        grid.push(buildCalendarDay(date, true, today, lat, lon));
+        currentWeek.push(buildCalendarCellData(date, today, lat, lon));
+
+        if (currentWeek.length === 7) {
+            weeks.push(currentWeek);
+            currentWeek = [];
+        }
     }
 
-    // 3. Generate next month overflow to complete the grid (5 or 6 rows)
-    const totalCurrentAndPrev = grid.length;
-    const totalCellsRequired = totalCurrentAndPrev > 35 ? 42 : 35;
-    const remainingCells = totalCellsRequired - totalCurrentAndPrev;
-
-    for (let i = 1; i <= remainingCells; i++) {
-        const date = new Date(year, month + 1, i);
-        grid.push(buildCalendarDay(date, false, today, lat, lon));
+    // 3. Fill remaining days of the last week with nulls to keep grid structure
+    if (currentWeek.length > 0) {
+        while (currentWeek.length < 7) {
+            currentWeek.push(null);
+        }
+        weeks.push(currentWeek);
     }
 
-    return grid;
+    return weeks;
 };
 
-const buildCalendarDay = (
+const buildCalendarCellData = (
     date: Date,
-    isCurrentMonth: boolean,
     today: Date,
     lat: number,
     lon: number
-): CalendarDay => {
+): CalendarCellData => {
     const panchang = calculatePanchang(date, lat, lon);
 
     const isToday =
@@ -66,30 +70,52 @@ const buildCalendarDay = (
         date.getMonth() === today.getMonth() &&
         date.getFullYear() === today.getFullYear();
 
-    // Deduce marker based on mock string for now
-    // In production, 'tithi' should be an enum/number mapped to these
-    let marker: 'amavasya' | 'purnima' | 'ekadashi' | null = null;
-    const tithiLower = panchang.tithi.toLowerCase();
-
-    // Random mock markers to demonstrate capabilities
-    if (tithiLower.includes('amavasya') || date.getDate() === 15) marker = 'amavasya';
-    else if (tithiLower.includes('purnima') || date.getDate() === 30) marker = 'purnima';
-    else if (tithiLower.includes('ekadashi') || date.getDate() === 11 || date.getDate() === 26) marker = 'ekadashi';
-
     const isSunday = date.getDay() === 0;
 
-    const holidayMatch = INDIAN_NATIONAL_HOLIDAYS.find(
+    // Build festivals from national holidays
+    const festivals: string[] = [];
+    const holidayMatches = INDIAN_NATIONAL_HOLIDAYS.filter(
         (h) => h.month === date.getMonth() && h.day === date.getDate()
     );
+    for (const h of holidayMatches) {
+        festivals.push(h.name);
+    }
+
+    const isHoliday = festivals.length > 0 || isSunday;
+
+    // Format ISO date string
+    const isoDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    const tithiStr = panchang.tithi || '';
+    const isEkadashi = tithiStr.toLowerCase().includes('ekadashi');
+    const isPurnima = tithiStr.toLowerCase().includes('purnima');
+    const isAmavasya = tithiStr.toLowerCase().includes('amavasya');
 
     return {
-        ...panchang,
-        dateObj: date.toISOString(),
-        dayNumber: date.getDate(),
-        isCurrentMonth,
-        isToday,
+        isoDate,
+        marathiDate: toMarathiNumeral(date.getDate()),
+        englishDate: date.getDate(),
+
+        tithi: panchang.tithi,
+        paksha: panchang.paksha,
+        hinduMonth: panchang.hinduMonth,
+
+        nakshatra: panchang.nakshatra,
+
+        sunrise: panchang.sunrise,
+        sunset: panchang.sunset,
+
+        festivals,
+        notes: undefined,
+
         isSunday,
-        festivalMarker: marker,
-        nationalHolidayKey: holidayMatch?.key,
+        isToday,
+        isHoliday,
+        isEkadashi,
+        isPurnima,
+        isAmavasya,
+
+        hasBirthday: false, // Populated later if needed
+        hasEvent: false,    // Populated later if needed
     };
 };

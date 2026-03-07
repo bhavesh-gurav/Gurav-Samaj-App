@@ -32,6 +32,19 @@
         "abhijitMuhurat": "अभिजित मुहूर्त",
         "rahuKaal": "राहुकाळ"
     },
+    "detail": {
+        "panchang": "पंचांग",
+        "tithi": "तिथी",
+        "nakshatra": "नक्षत्र",
+        "yoga": "योग",
+        "karana": "करण",
+        "paksha": "पक्ष",
+        "hinduMonth": "हिंदू महिना",
+        "sunInfo": "सूर्य वेळा",
+        "festivals": "सण आणि सणवारी",
+        "birthdays": "वाढदिवस",
+        "communityEvents": "समाज कार्यक्रम"
+    },
     "community": {
         "announcements": "घोषणा",
         "upcoming": "आगामी",

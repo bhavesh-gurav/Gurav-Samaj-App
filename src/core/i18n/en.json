@@ -32,6 +32,19 @@
         "abhijitMuhurat": "Abhijit",
         "rahuKaal": "Rahu Kaal"
     },
+    "detail": {
+        "panchang": "Panchang",
+        "tithi": "Tithi",
+        "nakshatra": "Nakshatra",
+        "yoga": "Yoga",
+        "karana": "Karana",
+        "paksha": "Paksha",
+        "hinduMonth": "Hindu Month",
+        "sunInfo": "Sun Timings",
+        "festivals": "Festivals & Holidays",
+        "birthdays": "Birthdays",
+        "communityEvents": "Community Events"
+    },
     "community": {
         "announcements": "Announcements",
         "upcoming": "Upcoming",

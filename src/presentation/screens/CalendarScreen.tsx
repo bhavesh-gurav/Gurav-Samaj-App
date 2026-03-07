@@ -1,16 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import * as Location from 'expo-location';
 import { useTheme } from '../../core/theme/ThemeProvider';
-import { RootState } from '../store';
-import { cacheMonthData, CalendarDay } from '../store/slices/appSlice';
-import { generateMonthGrid } from '../../core/utils/calendarGenerator';
+import { generateMonthData } from '../../core/utils/calendarGenerator';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import { translatePanchangField } from '../../core/utils/panchangTranslations';
 import { BirthdayModal } from '../components/BirthdayModal';
+import { DayCell } from '../components/DayCell';
 
 const FALLBACK_LAT = 19.0760;
 const FALLBACK_LON = 72.8777;
@@ -18,271 +15,174 @@ const FALLBACK_LON = 72.8777;
 export const CalendarScreen = () => {
     const { theme, isDark } = useTheme();
     const { t, i18n } = useTranslation();
-    const dispatch = useDispatch();
     const navigation = useNavigation<NavigationProp<any>>();
 
-    // Navigation State
     const [currentDate, setCurrentDate] = useState(new Date());
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const monthKey = `${year}-${month.toString().padStart(2, '0')}`;
 
-    // Redux Cache
-    const calendarCache = useSelector((state: RootState) => state.app.calendarData || {});
-    const cachedMonthGrid = calendarCache[monthKey];
-
-    const [loading, setLoading] = useState(!cachedMonthGrid);
+    const [loading, setLoading] = useState(true);
     const [locationName, setLocationName] = useState(t('calendar.fetchingLocation'));
+    const [userLat, setUserLat] = useState(FALLBACK_LAT);
+    const [userLon, setUserLon] = useState(FALLBACK_LON);
 
-    // Weekday labels translated
-    const daysOfWeek = [
-        t('weekDays.sun'), t('weekDays.mon'), t('weekDays.tue'),
-        t('weekDays.wed'), t('weekDays.thu'), t('weekDays.fri'), t('weekDays.sat')
-    ];
+    const daysOfWeek = ['रवि', 'सोम', 'मंगळ', 'बुध', 'गुरु', 'शुक्र', 'शनि'];
+
+    // Generate month data cleanly via useMemo instead of reading stale Redux data from old app versions
+    const monthData = useMemo(() => {
+        setLoading(true);
+        const data = generateMonthData(year, month, userLat, userLon);
+        // Defer unsetting loading so visually we can catch any transition
+        setTimeout(() => setLoading(false), 0);
+        return data;
+    }, [year, month, userLat, userLon]);
 
     useEffect(() => {
         (async () => {
-            if (cachedMonthGrid) {
-                setLoading(false);
-                return; // Break early using memoized state
-            }
-
-            setLoading(true);
+            let lat = FALLBACK_LAT, lon = FALLBACK_LON;
             try {
                 let { status } = await Location.requestForegroundPermissionsAsync();
-                let lat = FALLBACK_LAT;
-                let lon = FALLBACK_LON;
-
                 if (status === 'granted') {
                     let location = await Location.getCurrentPositionAsync({});
                     lat = location.coords.latitude;
                     lon = location.coords.longitude;
-
+                    setUserLat(lat);
+                    setUserLon(lon);
                     let geocode = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lon });
                     if (geocode && geocode.length > 0) {
                         setLocationName(geocode[0].city || t('calendar.detectedLocation'));
                     }
                 }
-
-                // Generate Grid
-                const grid = generateMonthGrid(year, month, lat, lon);
-                dispatch(cacheMonthData({ key: monthKey, data: grid }));
-
             } catch (e) {
                 console.warn('Geolocation Error', e);
-                // Execute fallback coordinates
                 setLocationName(t('calendar.fallbackLocation'));
-                const grid = generateMonthGrid(year, month, FALLBACK_LAT, FALLBACK_LON);
-                dispatch(cacheMonthData({ key: monthKey, data: grid }));
-            } finally {
-                setLoading(false);
             }
         })();
-    }, [year, month, dispatch, monthKey, t]);
+    }, [t]);
 
-    const changeMonth = (diff: number) => {
-        setCurrentDate(new Date(year, month + diff, 1));
-    };
+
+
+    const changeMonth = (diff: number) => setCurrentDate(new Date(year, month + diff, 1));
+
+    const marathiMonths = [
+        'जानेवारी', 'फेब्रुवारी', 'मार्च', 'एप्रिल',
+        'मे', 'जून', 'जुलै', 'ऑगस्ट',
+        'सप्टेंबर', 'ऑक्टोबर', 'नोव्हेंबर', 'डिसेंबर'
+    ];
+
+    const MARATHI_DIGITS = ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'];
+    const toMarathi = (num: number): string =>
+        num.toString().split('').map((d) => MARATHI_DIGITS[parseInt(d, 10)] || d).join('');
 
     const getMonthName = (m: number) => {
-        const months = [
-            t('months.jan'), t('months.feb'), t('months.mar'), t('months.apr'),
-            t('months.may'), t('months.jun'), t('months.jul'), t('months.aug'),
-            t('months.sep'), t('months.oct'), t('months.nov'), t('months.dec')
-        ];
-        return months[m];
+        if (i18n.language === 'mr') return marathiMonths[m];
+        return [t('months.jan'), t('months.feb'), t('months.mar'), t('months.apr'),
+        t('months.may'), t('months.jun'), t('months.jul'), t('months.aug'),
+        t('months.sep'), t('months.oct'), t('months.nov'), t('months.dec')][m];
     };
 
     const renderHeader = () => (
-        <View style={styles.headerRow}>
+        <View style={[styles.headerRow, { backgroundColor: isDark ? '#1a1a2e' : '#E65100' }]}>
             <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.arrowBtn}>
-                <MaterialCommunityIcons name="chevron-left" size={32} color={theme.primary} />
+                <MaterialCommunityIcons name="chevron-left" size={30} color="#fff" />
             </TouchableOpacity>
             <View style={{ alignItems: 'center' }}>
-                <Text style={[styles.monthText, { color: theme.textPrimary }]}>
-                    {getMonthName(month)} {year}
+                <Text style={styles.monthText}>
+                    {getMonthName(month)} {i18n.language === 'mr' ? toMarathi(year) : year}
                 </Text>
-                <Text style={{ color: theme.textSecondary, fontSize: 12 }}>{locationName}</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>{locationName}</Text>
             </View>
             <TouchableOpacity onPress={() => changeMonth(1)} style={styles.arrowBtn}>
-                <MaterialCommunityIcons name="chevron-right" size={32} color={theme.primary} />
+                <MaterialCommunityIcons name="chevron-right" size={30} color="#fff" />
             </TouchableOpacity>
         </View>
     );
 
-    const getMarkerColor = (marker?: string | null) => {
-        switch (marker) {
-            case 'amavasya': return '#f44336'; // Red
-            case 'purnima': return '#ffeb3b'; // Yellow
-            case 'ekadashi': return '#4caf50'; // Green
-            default: return 'transparent';
-        }
+    const onDayPress = (isoDate: string) => {
+        navigation.navigate('DayDetail', { isoDate });
     };
 
-    const onDayPress = (day: CalendarDay) => {
-        navigation.navigate('DayDetail', { dayData: day });
-    };
-
-    const localToday = new Date();
-    const isCellToday = (cell: CalendarDay) => {
-        const d = new Date(cell.dateObj);
-        return d.getDate() === localToday.getDate() &&
-            d.getMonth() === localToday.getMonth() &&
-            d.getFullYear() === localToday.getFullYear();
-    };
-
-    const getDayBackgroundColor = (cell: CalendarDay, isTodayOverride: boolean) => {
-        if (isTodayOverride) {
-            if (cell.nationalHolidayKey || cell.isSunday) {
-                return isDark ? '#4a1515' : '#ffcdd2'; // Darker red for today if Sunday/Holiday
-            }
-            return isDark ? '#2c2c2c' : '#e3f2fd'; // Subtle highlight for normal today
-        }
-        if (cell.nationalHolidayKey) {
-            return isDark ? '#4a1515' : '#ffebee';
-        }
-        if (cell.isSunday) {
-            return isDark ? '#3b1f1f' : '#ffebee';
-        }
-        return theme.surface;
-    };
+    // Calculate responsive row height based on screen dimensions
+    const screenHeight = Dimensions.get("window").height;
+    const headerHeight = 250; // Increased by another 30px to reduce cell height by ~5px
+    const availableHeight = screenHeight - headerHeight;
+    const rowsCount = monthData ? monthData.length : 5;
+    const cellHeight = availableHeight / rowsCount;
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#f5f5f5' }]}>
             <BirthdayModal />
             {renderHeader()}
 
-            {/* WeekDays */}
-            <View style={styles.weekDaysContainer}>
+            {/* Weekday Header */}
+            <View style={[styles.weekRow, { backgroundColor: isDark ? '#2a2a2a' : '#fff3e0' }]}>
                 {daysOfWeek.map((day, ix) => (
-                    <Text key={ix} style={[styles.weekDayText, { color: theme.primary }]}>{day}</Text>
+                    <Text key={ix} style={[styles.weekText, { color: ix === 0 ? '#d32f2f' : (isDark ? '#ffcc80' : '#E65100') }]}>{day}</Text>
                 ))}
             </View>
 
-            {/* Math Grid */}
-            <View style={{ flex: 1 }}>
-                {loading ? (
-                    <ActivityIndicator size="large" color={theme.primary} style={styles.loader} />
-                ) : (
-                    <View style={styles.gridContainer}>
-                        {cachedMonthGrid?.map((cell, idx) => {
-                            const isTodayValue = isCellToday(cell);
-                            return (
-                                <TouchableOpacity
-                                    key={idx}
-                                    style={[
-                                        styles.dayCell,
-                                        { backgroundColor: getDayBackgroundColor(cell, isTodayValue), borderColor: isTodayValue ? theme.primary : theme.border },
-                                        isTodayValue && styles.todayCell
-                                    ]}
-                                    onPress={() => onDayPress(cell)}
-                                >
-                                    <Text style={[
-                                        styles.dayNumberText,
-                                        { color: cell.isCurrentMonth ? theme.textPrimary : theme.textSecondary },
-                                        isTodayValue && { fontWeight: '900' }
-                                    ]}>
-                                        {cell.dayNumber}
-                                    </Text>
+            {/* Grid */}
+            {loading ? (
+                <View style={styles.loaderContainer}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                </View>
+            ) : (
+                <View style={[styles.gridContainer, { height: availableHeight }]}>
+                    {monthData && monthData.map((week, weekIdx) => (
+                        <View key={`week-${weekIdx}`} style={styles.weekContainer}>
+                            {week.map((cell, dayIdx) => (
+                                <DayCell
+                                    key={`cell-${weekIdx}-${dayIdx}`}
+                                    cell={cell}
+                                    cellHeight={cellHeight}
+                                    onPress={onDayPress}
+                                />
+                            ))}
+                        </View>
+                    ))}
+                </View>
+            )}
 
-                                    <Text style={[
-                                        styles.tithiText,
-                                        { color: cell.isCurrentMonth ? theme.textSecondary : theme.border }
-                                    ]} numberOfLines={1}>
-                                        {translatePanchangField(cell.tithi.split(' ')[0], i18n.language)}
-                                    </Text>
-
-                                    {cell.nationalHolidayKey ? (
-                                        <Text style={{ fontSize: 8, color: theme.error, marginTop: 1, fontWeight: 'bold' }}>
-                                            {t('holidays.holiday')}
-                                        </Text>
-                                    ) : (
-                                        <Text style={{ fontSize: 9, color: theme.textSecondary }}> {translatePanchangField(cell.paksha.charAt(0), i18n.language)}</Text>
-                                    )}
-
-                                    {cell.festivalMarker && (
-                                        <View style={[styles.dot, { backgroundColor: getMarkerColor(cell.festivalMarker) }]} />
-                                    )}
-                                </TouchableOpacity>
-                            )
-                        })}
-                    </View>
-                )}
-            </View>
+            {/* Ad Space Placeholder */}
+            {!loading && (
+                <View style={styles.adContainer}>
+                    <Text style={{ color: isDark ? '#555' : '#aaa', fontSize: 12 }}>Ad Space</Text>
+                </View>
+            )}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 10,
-    },
+    container: { flex: 1 },
     headerRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginVertical: 15,
+        flexDirection: 'row', justifyContent: 'space-between',
+        alignItems: 'center', paddingVertical: 14, paddingHorizontal: 10,
     },
-    monthText: {
-        fontSize: 22,
-        fontWeight: 'bold',
+    monthText: { fontSize: 22, fontWeight: 'bold', color: '#fff' },
+    arrowBtn: { padding: 5 },
+    weekRow: {
+        flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 8,
     },
-    arrowBtn: {
-        padding: 5,
-    },
-    weekDaysContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 10,
-    },
-    weekDayText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        width: 40,
-        textAlign: 'center',
-    },
-    loader: {
-        marginTop: 50,
-    },
+    weekText: { fontSize: 13, fontWeight: 'bold', width: '14.28%', textAlign: 'center' },
+    loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     gridContainer: {
+        flexDirection: 'column',
+    },
+    weekContainer: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        width: '100%',
     },
-    dayCell: {
-        width: '13.5%', // Slightly less than 100/7 to account for margins
-        height: 65,
-        borderWidth: 1,
-        borderRadius: 8,
-        marginBottom: 8,
-        justifyContent: 'flex-start',
+    adContainer: {
+        height: 50,
+        justifyContent: 'center',
         alignItems: 'center',
-        paddingTop: 5,
-    },
-    todayCell: {
-        borderWidth: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
-        elevation: 4,
-    },
-    dayNumberText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    tithiText: {
-        fontSize: 9,
-        marginTop: 2,
-        textAlign: 'center',
-    },
-    dot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        position: 'absolute',
-        bottom: 5,
-        right: 5,
+        marginHorizontal: 10,
+        marginTop: 5,
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderColor: '#ccc',
+        borderRadius: 8,
     }
 });

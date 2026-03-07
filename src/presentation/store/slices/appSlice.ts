@@ -1,30 +1,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { PanchangDay } from '../../../domain/models/PanchangDay';
 
 export type ThemeType = 'light' | 'dark' | 'system';
 
-export interface CalendarDay {
-    dateObj: string;
-    dayNumber: number;
-    isCurrentMonth: boolean;
-    isToday: boolean;
-    isSunday: boolean;
-    festivalMarker?: 'amavasya' | 'purnima' | 'ekadashi' | null;
-    nationalHolidayKey?: string;
-    sunrise: string;
-    sunset: string;
-    tithi: string;
-    nakshatra: string;
-    paksha: string;
-    hinduMonth: string;
-    rahuKaal: string;
-    abhijitMuhurat: string;
-}
+import { CalendarCellData } from '../../../domain/models/CalendarCellData';
+
+// Re-export CalendarCellData for backwards compatibility where needed
+export type CalendarDay = CalendarCellData;
 
 interface AppState {
     theme: ThemeType;
     isFirstLaunch: boolean;
     language: 'en' | 'mr' | null;
-    calendarData: Record<string, CalendarDay[]>;
+    calendarData: Record<string, (CalendarCellData | null)[][]>;
     userName: string | null;
     userBirthDate: string | null;
     lastBirthdayShownDate: string | null;
@@ -52,7 +40,7 @@ const appSlice = createSlice({
         setAppLaunched: (state) => {
             state.isFirstLaunch = false;
         },
-        cacheMonthData: (state, action: PayloadAction<{ key: string; data: CalendarDay[] }>) => {
+        cacheMonthData: (state, action: PayloadAction<{ key: string; data: (CalendarCellData | null)[][] }>) => {
             if (!state.calendarData) {
                 state.calendarData = {};
             }
